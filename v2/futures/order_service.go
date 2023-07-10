@@ -388,6 +388,12 @@ type Order struct {
 	PositionSide     PositionSideType `json:"positionSide"`
 	PriceProtect     bool             `json:"priceProtect"`
 	ClosePosition    bool             `json:"closePosition"`
+	Code             int              `json:"code"`
+	Msg              string           `json:"msg"`
+}
+
+func (o *Order) String() string {
+	return fmt.Sprintf("<Order:%s oid:%d cid:%s P:%s S:%s %s C:%d>", o.Symbol, o.OrderID, o.ClientOrderID, o.Price, o.Status, o.Side, o.Code)
 }
 
 // ListOrdersService all account orders; active, canceled, or filled
@@ -537,6 +543,12 @@ type CancelOrderResponse struct {
 	OrigType         string           `json:"origType"`
 	PositionSide     PositionSideType `json:"positionSide"`
 	PriceProtect     bool             `json:"priceProtect"`
+	Code             int              `json:"code"`
+	Msg              string           `json:"msg"`
+}
+
+func (rep *CancelOrderResponse) String() string {
+	return fmt.Sprintf("<OrderID:%d Symbol:%s Status:%s c:%d %s>", rep.OrderID, rep.Symbol, rep.Status, rep.Code, rep.Msg)
 }
 
 // CancelAllOpenOrdersService cancel all open orders
@@ -606,7 +618,9 @@ func (s *CancelMultiplesOrdersService) Do(ctx context.Context, opts ...RequestOp
 		r.setFormParam("orderIdList", orderIDListString)
 	}
 	if s.origClientOrderIDList != nil {
-		r.setFormParam("origClientOrderIdList", s.origClientOrderIDList)
+		// r.setFormParam("origClientOrderIdList", s.origClientOrderIDList)
+		b, _ := json.Marshal(s.origClientOrderIDList)
+		r.setFormParam("origClientOrderIdList", string(b))
 	}
 	data, _, err := s.c.callAPI(ctx, r, opts...)
 	if err != nil {

@@ -615,3 +615,72 @@ func (c *Client) NewOpenInterestStatisticsService() *OpenInterestStatisticsServi
 func (c *Client) NewLongShortRatioService() *LongShortRatioService {
 	return &LongShortRatioService{c: c}
 }
+
+type ModifyOrderResponse struct {
+	OrderId          int64            `json:"orderId"`
+	Symbol           string           `json:"symbol"`
+	Pair             string           `json:"pair"`
+	Status           OrderStatusType  `json:"status"`
+	ClientOrderId    string           `json:"clientOrderId"`
+	Price            string           `json:"price"`
+	AveragePrice     string           `json:"avgPrice"`
+	OrigQuantity     string           `json:"origQty"`
+	ExecutedQuantity string           `json:"executedQty"`
+	CumQty           string           `json:"cumQty"`
+	CumBase          string           `json:"cumBase"`
+	TimeInForce      TimeInForceType  `json:"timeInForce"`
+	Type             OrderType        `json:"type"`
+	ReduceOnly       bool             `json:"reduceOnly"`
+	ClosePosition    bool             `json:"closePosition"`
+	Side             SideType         `json:"side"`
+	PositionSide     PositionSideType `json:"positionSide"`
+	StopPrice        string           `json:"stopPrice"`
+	WorkingType      WorkingType      `json:"workingType"`
+	PriceProtect     bool             `json:"priceProtect"`
+	OrigType         string           `json:"origType"`
+	UpdateTime       int64            `json:"updateTime"`
+	Code             int              `json:"code"`
+	Msg              string           `json:"msg"`
+}
+
+func (rep *ModifyOrderResponse) String() string {
+	return fmt.Sprintf("<Mrep:%d %s %s S:%s C:%d>", rep.OrderId, rep.ClientOrderId, rep.Price, rep.Status, rep.Code)
+}
+
+func (c *Client) CallModifyOrder(ctx context.Context, paras map[string]interface{}) (res *ModifyOrderResponse, err error) {
+	r := &request{
+		method:   http.MethodPut,
+		endpoint: "/fapi/v1/order",
+		secType:  secTypeSigned,
+	}
+	r.setFormParams(paras)
+	data, _, err := c.callAPI(ctx, r)
+	if err != nil {
+		return &ModifyOrderResponse{}, err
+	}
+	res = new(ModifyOrderResponse)
+	err = json.Unmarshal(data, res)
+	if err != nil {
+		return nil, err
+	}
+	return res, nil
+}
+
+func (c *Client) CallBatchModifyOrders(ctx context.Context, paras map[string]interface{}) (res []*ModifyOrderResponse, err error) {
+	r := &request{
+		method:   http.MethodPut,
+		endpoint: "/fapi/v1/batchOrders",
+		secType:  secTypeSigned,
+	}
+	r.setFormParams(paras)
+	data, _, err := c.callAPI(ctx, r)
+	if err != nil {
+		return []*ModifyOrderResponse{}, err
+	}
+	res = make([]*ModifyOrderResponse, 0)
+	err = json.Unmarshal(data, &res)
+	if err != nil {
+		return nil, err
+	}
+	return res, nil
+}
