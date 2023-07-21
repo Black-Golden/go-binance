@@ -644,7 +644,7 @@ type ModifyOrderResponse struct {
 }
 
 func (rep *ModifyOrderResponse) String() string {
-	return fmt.Sprintf("<Mrep:%d %s %s S:%s C:%d %s>", rep.OrderId, rep.ClientOrderId, rep.Price, rep.Status, rep.Code, rep.Msg)
+	return fmt.Sprintf("<Mrep:%d C:%s P:%s S:%s C:%d %s>", rep.OrderId, rep.ClientOrderId, rep.Price, rep.Status, rep.Code, rep.Msg)
 }
 
 func (c *Client) CallModifyOrder(ctx context.Context, paras map[string]interface{}) (res *ModifyOrderResponse, err error) {
