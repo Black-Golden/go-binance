@@ -191,6 +191,7 @@ func (s *CreateOrderService) Do(ctx context.Context, opts ...RequestOption) (res
 	err = json.Unmarshal(data, res)
 	res.RateLimitOrder10s = header.Get("X-Mbx-Order-Count-10s")
 	res.RateLimitOrder1m = header.Get("X-Mbx-Order-Count-1m")
+	res.UsedWeight1m = header.Get("X-Mbx-Used-Weight-1m")
 
 	if err != nil {
 		return nil, err
@@ -223,6 +224,7 @@ type CreateOrderResponse struct {
 	PriceProtect      bool             `json:"priceProtect"`
 	RateLimitOrder10s string           `json:"rateLimitOrder10s,omitempty"`
 	RateLimitOrder1m  string           `json:"rateLimitOrder1m,omitempty"`
+	UsedWeight1m      string           `json:"usedWeight,omitempty"`
 }
 
 // ListOpenOrdersService list opened orders
@@ -815,7 +817,10 @@ type CreateBatchOrdersService struct {
 }
 
 type CreateBatchOrdersResponse struct {
-	Orders []*Order
+	Orders        []*Order
+	LimitOrder10s string `json:"rateLimitOrder10s,omitempty"`
+	LimitOrder1m  string `json:"rateLimitOrder1m,omitempty"`
+	UsedWeight1m  string `json:"usedWeight,omitempty"`
 }
 
 func (s *CreateBatchOrdersService) OrderList(orders []*CreateOrderService) *CreateBatchOrdersService {
@@ -885,7 +890,7 @@ func (s *CreateBatchOrdersService) Do(ctx context.Context, opts ...RequestOption
 
 	r.setFormParams(m)
 
-	data, _, err := s.c.callAPI(ctx, r, opts...)
+	data, header, err := s.c.callAPI(ctx, r, opts...)
 
 	if err != nil {
 		return &CreateBatchOrdersResponse{}, err
@@ -900,6 +905,9 @@ func (s *CreateBatchOrdersService) Do(ctx context.Context, opts ...RequestOption
 	}
 
 	batchCreateOrdersResponse := new(CreateBatchOrdersResponse)
+	batchCreateOrdersResponse.LimitOrder10s = header.Get("X-Mbx-Order-Count-10s")
+	batchCreateOrdersResponse.LimitOrder1m = header.Get("X-Mbx-Order-Count-1m")
+	batchCreateOrdersResponse.UsedWeight1m = header.Get("X-Mbx-Used-Weight-1m")
 
 	for _, j := range rawMessages {
 		o := new(Order)
