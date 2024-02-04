@@ -17,6 +17,7 @@ type CreateOrderService struct {
 	positionSide     *PositionSideType
 	orderType        OrderType
 	timeInForce      *TimeInForceType
+	priceMatch       string
 	quantity         string
 	reduceOnly       *bool
 	price            *string
@@ -113,6 +114,11 @@ func (s *CreateOrderService) PriceProtect(priceProtect bool) *CreateOrderService
 	s.priceProtect = &priceProtect
 	return s
 }
+func (s *CreateOrderService) PriceMatch(pm string) *CreateOrderService {
+	s.priceMatch = pm
+	s.price = nil
+	return s
+}
 
 // NewOrderResponseType set newOrderResponseType
 func (s *CreateOrderService) NewOrderResponseType(newOrderResponseType NewOrderRespType) *CreateOrderService {
@@ -149,7 +155,9 @@ func (s *CreateOrderService) createOrder(ctx context.Context, endpoint string, o
 	if s.reduceOnly != nil {
 		m["reduceOnly"] = *s.reduceOnly
 	}
-	if s.price != nil {
+	if s.priceMatch != "" {
+		m["priceMatch"] = s.priceMatch
+	} else if s.price != nil {
 		m["price"] = *s.price
 	}
 	if s.newClientOrderID != nil {
@@ -205,6 +213,7 @@ type CreateOrderResponse struct {
 	OrderID           int64            `json:"orderId"`
 	ClientOrderID     string           `json:"clientOrderId"`
 	Price             string           `json:"price"`
+	PriceMatch        string           `json:"priceMatch,omitempty"`
 	OrigQuantity      string           `json:"origQty"`
 	ExecutedQuantity  string           `json:"executedQty"`
 	CumQuote          string           `json:"cumQuote"`
