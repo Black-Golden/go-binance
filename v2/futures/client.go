@@ -623,6 +623,7 @@ type ModifyOrderResponse struct {
 	Status           OrderStatusType  `json:"status"`
 	ClientOrderId    string           `json:"clientOrderId"`
 	Price            string           `json:"price"`
+	PriceMatch       string           `json:"priceMatch"`
 	AveragePrice     string           `json:"avgPrice"`
 	OrigQuantity     string           `json:"origQty"`
 	ExecutedQuantity string           `json:"executedQty"`
@@ -644,7 +645,7 @@ type ModifyOrderResponse struct {
 }
 
 func (rep *ModifyOrderResponse) String() string {
-	return fmt.Sprintf("<Mrep:%d C:%s P:%s S:%s C:%d %s>", rep.OrderId, rep.ClientOrderId, rep.Price, rep.Status, rep.Code, rep.Msg)
+	return fmt.Sprintf("<Mrep:%d C:%s P:%s %s S:%s C:%d %s>", rep.OrderId, rep.ClientOrderId, rep.Price, rep.PriceMatch, rep.Status, rep.Code, rep.Msg)
 }
 
 func (c *Client) CallModifyOrder(ctx context.Context, paras map[string]interface{}) (res *ModifyOrderResponse, err error) {
