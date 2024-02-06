@@ -404,7 +404,7 @@ type Order struct {
 }
 
 func (o *Order) String() string {
-	return fmt.Sprintf("<Order:%s oid:%d cid:%s P:%s S:%s %s C:%d>", o.Symbol, o.OrderID, o.ClientOrderID, o.Price, o.Status, o.Side, o.Code)
+	return fmt.Sprintf("<Order:%s oid:%d cid:%s P:%s S:%s %s C:%d M:%s>", o.Symbol, o.OrderID, o.ClientOrderID, o.Price, o.Status, o.Side, o.Code, o.Msg)
 }
 
 // ListOrdersService all account orders; active, canceled, or filled
@@ -863,7 +863,9 @@ func (s *CreateBatchOrdersService) Do(ctx context.Context, opts ...RequestOption
 		if order.reduceOnly != nil {
 			m["reduceOnly"] = *order.reduceOnly
 		}
-		if order.price != nil {
+		if order.priceMatch != "" {
+			m["priceMatch"] = order.priceMatch
+		} else if order.price != nil {
 			m["price"] = *order.price
 		}
 		if order.newClientOrderID != nil {
@@ -924,10 +926,7 @@ func (s *CreateBatchOrdersService) Do(ctx context.Context, opts ...RequestOption
 			return &CreateBatchOrdersResponse{}, err
 		}
 
-		if o.ClientOrderID != "" {
-			batchCreateOrdersResponse.Orders = append(batchCreateOrdersResponse.Orders, o)
-			continue
-		}
+		batchCreateOrdersResponse.Orders = append(batchCreateOrdersResponse.Orders, o)
 
 	}
 
