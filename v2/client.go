@@ -322,6 +322,7 @@ type Client struct {
 	Logger     *log.Logger
 	TimeOffset int64
 	do         doFunc
+	SignFunc   func(raw string) string
 }
 
 func (c *Client) debug(format string, v ...interface{}) {
@@ -364,13 +365,17 @@ func (c *Client) parseRequest(r *request, opts ...RequestOption) (err error) {
 
 	if r.secType == secTypeSigned {
 		raw := fmt.Sprintf("%s%s", queryString, bodyString)
-		mac := hmac.New(sha256.New, []byte(c.SecretKey))
-		_, err = mac.Write([]byte(raw))
-		if err != nil {
-			return err
-		}
 		v := url.Values{}
-		v.Set(signatureKey, fmt.Sprintf("%x", (mac.Sum(nil))))
+		if c.SignFunc != nil {
+			v.Set(signatureKey, c.SignFunc(raw))
+		} else {
+			mac := hmac.New(sha256.New, []byte(c.SecretKey))
+			_, err = mac.Write([]byte(raw))
+			if err != nil {
+				return err
+			}
+			v.Set(signatureKey, fmt.Sprintf("%x", (mac.Sum(nil))))
+		}
 		if queryString == "" {
 			queryString = v.Encode()
 		} else {
